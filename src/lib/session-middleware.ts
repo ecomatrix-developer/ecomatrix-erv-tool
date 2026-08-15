@@ -2,9 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { verifySessionCookie, SESSION_COOKIE } from "@/lib/session-edge";
 
 const PUBLIC_ROUTES = ["/login", "/", "/how-it-works"];
+const STATIC_FILE_REGEX = /\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|wav|mp3|m4a|aac|oga|woff|woff2|ttf|eot|css|js|epw|pdf|ico)$/i;
 
 function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_ROUTES.includes(pathname)) return true;
+  if (STATIC_FILE_REGEX.test(pathname)) return true;
   return pathname.startsWith("/api/") || pathname.startsWith("/_next") || pathname.startsWith("/brand");
 }
 
