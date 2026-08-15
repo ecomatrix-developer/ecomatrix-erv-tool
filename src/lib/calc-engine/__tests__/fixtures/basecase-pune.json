@@ -1,0 +1,51 @@
+{
+  "description": "BaseCase scenario exactly as last saved/cached in ERV Tool_June 2025_AG.xlsx (row 5). All 8760 hours selected (full year, every hour/day/month toggle TRUE). Values extracted directly via openpyxl data_only=True read of the source workbook.",
+  "inputs": {
+    "scenario": "BaseCase",
+    "city": "Pune",
+    "fuelCostElectricity": 0.14,
+    "fuelCostNaturalGas": 0.0379,
+    "ghgElectricity": 0.05,
+    "ghgNaturalGas": 1.899,
+    "preheatFlag": "YES",
+    "preheatTemp": -5,
+    "preheatFuelSource": "Natural Gas",
+    "copPreheat": 1,
+    "preheatCost": 0,
+    "ervTech": "BaseCase",
+    "ervTechCost": 0,
+    "winterSensibleEff": 0.5,
+    "summerSensibleEff": 0,
+    "winterLatentEff": 0,
+    "summerLatentEff": 0,
+    "postHeatSetpoint": 20,
+    "postheatFuelSource": "Natural Gas",
+    "copPostheat": 1,
+    "postErvHeatingCost": 0,
+    "postCoolSetpoint": 24,
+    "copCooling": 1,
+    "postErvCoolingCost": 0,
+    "humidificationFlag": "YES",
+    "rhSetpoint": 0.5,
+    "copHumidification": 1,
+    "humidificationFuelSource": "Natural Gas",
+    "humidificationCost": 0,
+    "supplyFlow": 9000,
+    "exhaustFlow": 9000
+  },
+  "expectedOutputs": {
+    "preheatEnergyMwh": 0,
+    "postHeatingEnergyMwh": 30.650610599999972,
+    "coolingEnergyMwh": 233.74740239999986,
+    "humidificationEnergyMwh": 29.320833530450614,
+    "totalEnergyMwh": 293.71884653045043,
+    "capitalCost": 0,
+    "totalOperationalCost": 41121,
+    "totalGhgTons": 14.685942326522524
+  },
+  "tolerances": {
+    "energyMwh": 0.05,
+    "cost": 50,
+    "ghgTons": 0.05
+  }
+}
