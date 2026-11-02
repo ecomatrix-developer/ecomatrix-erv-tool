@@ -13,7 +13,9 @@ function isPublicRoute(pathname: string): boolean {
 /** Redirects unauthenticated users away from protected app routes, checking the
  * custom signed session cookie set by src/app/actions/auth.ts's login action. */
 export async function updateSession(request: NextRequest) {
-  if (isPublicRoute(request.nextUrl.pathname)) {
+  // LOGIN TEMPORARILY DISABLED: all routes are open (see getSession in src/lib/session.ts).
+  const LOGIN_DISABLED = true;
+  if (LOGIN_DISABLED || isPublicRoute(request.nextUrl.pathname)) {
     return NextResponse.next({ request });
   }
 

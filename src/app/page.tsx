@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { LoginModal } from "@/components/login-modal";
-import { getCurrentUserSession } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Wind,
@@ -67,31 +64,15 @@ const CORE_CAPABILITIES = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  const handleLaunchClick = async () => {
-    try {
-      const session = await getCurrentUserSession();
-      if (session) {
-        router.push("/dashboard");
-      } else {
-        setIsLoginModalOpen(true);
-      }
-    } catch {
-      setIsLoginModalOpen(true);
-    }
+  // LOGIN TEMPORARILY DISABLED: launch goes straight to the dashboard.
+  const handleLaunchClick = () => {
+    router.push("/dashboard");
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-900 antialiased">
       {/* Top Header */}
       <SiteHeader onLaunchClick={handleLaunchClick} />
-
-      {/* In-Place Login & Password Reset Modal */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
 
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-20 lg:py-28">

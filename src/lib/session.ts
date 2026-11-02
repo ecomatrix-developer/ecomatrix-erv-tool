@@ -52,9 +52,21 @@ export async function createSession(userId: string, email: string, role = "user"
   });
 }
 
+// LOGIN TEMPORARILY DISABLED: every visitor is treated as this one shared account.
+const SHARED_USER_EMAIL = "ervtool.ecomatrix@gmail.com";
+let sharedSession: SessionPayload | null = null;
+
 export async function getSession(): Promise<SessionPayload | null> {
-  const cookieStore = await cookies();
-  return decrypt(cookieStore.get(SESSION_COOKIE)?.value);
+  if (sharedSession) return sharedSession;
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const { data } = await createAdminClient()
+    .from("users")
+    .select("id, email")
+    .eq("email", SHARED_USER_EMAIL)
+    .single();
+  if (!data) return null;
+  sharedSession = { userId: data.id, email: data.email, role: "user" };
+  return sharedSession;
 }
 
 export async function deleteSession() {

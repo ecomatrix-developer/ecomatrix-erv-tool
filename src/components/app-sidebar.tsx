@@ -13,11 +13,10 @@ import {
   ShieldCheck,
   Pin,
   PinOff,
-  LogOut,
   AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { logout, getCurrentUserSession } from "@/app/actions/auth";
+import { getCurrentUserSession } from "@/app/actions/auth";
 import { useHasUnsavedChanges, setHasUnsavedChanges } from "@/lib/unsaved-changes-store";
 
 const NAV_ITEMS = [
@@ -131,19 +130,6 @@ export function AppSidebar() {
         </div>
 
         <div className="space-y-1 px-3 pb-4">
-          <button
-            type="button"
-            onClick={() => logout()}
-            title={!expanded ? "Log out" : undefined}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200",
-              !expanded && "justify-center px-0",
-            )}
-          >
-            <LogOut className="size-[18px] shrink-0" />
-            {expanded && <span>Log out</span>}
-          </button>
-
           <button
             type="button"
             onClick={() => setPinned((p) => !p)}
