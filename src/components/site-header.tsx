@@ -15,9 +15,9 @@ export function SiteHeader({ onLaunchClick }: SiteHeaderProps) {
         {/* Larger Brand Logo */}
         <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
           <Image
-            src="/brand/logo-light.png"
+            src="/logo-white.png"
             alt="Eco Matrix Solutions"
-            width={220}
+            width={359}
             height={64}
             className="h-11 w-auto shrink-0 object-contain"
             priority

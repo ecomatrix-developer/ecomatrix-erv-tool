@@ -10,32 +10,41 @@ export interface Database {
         Row: {
           id: string;
           email: string;
-          password_hash: string;
+          password_hash: string | null;
           full_name: string | null;
           is_active: boolean | null;
           created_at: string;
           last_login: string | null;
           password_changed_at: string | null;
+          trial_started_at: string;
+          trial_exempt: boolean;
+          trial_paused_at: string | null;
         };
         Insert: {
           id?: string;
           email: string;
-          password_hash: string;
+          password_hash?: string | null;
           full_name?: string | null;
           is_active?: boolean | null;
           created_at?: string;
           last_login?: string | null;
           password_changed_at?: string | null;
+          trial_started_at?: string;
+          trial_exempt?: boolean;
+          trial_paused_at?: string | null;
         };
         Update: {
           id?: string;
           email?: string;
-          password_hash?: string;
+          password_hash?: string | null;
           full_name?: string | null;
           is_active?: boolean | null;
           created_at?: string;
           last_login?: string | null;
           password_changed_at?: string | null;
+          trial_started_at?: string;
+          trial_exempt?: boolean;
+          trial_paused_at?: string | null;
         };
         Relationships: [];
       };

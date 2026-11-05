@@ -15,12 +15,15 @@ create extension if not exists "pgcrypto";
 create table if not exists public.users (
   id uuid not null default gen_random_uuid (),
   email text not null,
-  password_hash text not null,
+  password_hash text null, -- null for self-serve email-only accounts (see continueWithEmail)
   full_name text null,
   is_active boolean null default true,
   created_at timestamp with time zone not null default timezone ('utc'::text, now()),
   last_login timestamp with time zone null,
   password_changed_at timestamp with time zone null default now(),
+  trial_started_at timestamp with time zone not null default timezone ('utc'::text, now()),
+  trial_exempt boolean not null default false,
+  trial_paused_at timestamp with time zone null,
   constraint users_pkey primary key (id),
   constraint users_email_key unique (email)
 );

@@ -52,9 +52,9 @@ function ResetPasswordForm() {
         <div className="flex flex-col items-center text-center">
           <Link href="/" className="mb-4 inline-block">
             <Image
-              src="/brand/logo-light.png"
+              src="/logo-white.png"
               alt="Eco Matrix Solutions"
-              width={180}
+              width={280}
               height={50}
               className="h-10 w-auto object-contain"
               priority

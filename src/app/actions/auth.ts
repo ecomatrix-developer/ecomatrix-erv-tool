@@ -11,6 +11,86 @@ export interface AuthFormState {
   message?: string;
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Passwordless "Launch ERV Tool" gate: one email field, no password. Unknown
+ * emails are signed up on the spot (trial_started_at = now) and known emails are
+ * simply signed back in, as long as their 14-day trial hasn't lapsed.
+ *
+ * admin@gmail.com is deliberately excluded here and kept on the password-based
+ * `login` action below -- letting anyone type that address into this box would
+ * hand out Admin Portal access to whoever asks.
+ */
+export async function continueWithEmail(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const next = String(formData.get("next") ?? "/dashboard");
+
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return { error: "Please enter a valid email address." };
+  }
+
+  if (email === "admin@gmail.com") {
+    return { error: "Please use the admin sign-in instead." };
+  }
+
+  const supabase = createAdminClient();
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("id, email, is_active, trial_started_at, trial_exempt, trial_paused_at")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (!existingUser) {
+    const trialStartedAt = new Date().toISOString();
+    const { data: newUser, error } = await supabase
+      .from("users")
+      .insert({
+        email,
+        trial_started_at: trialStartedAt,
+        is_active: true,
+        last_login: trialStartedAt,
+      })
+      .select("id, email")
+      .single();
+
+    if (error || !newUser) {
+      return { error: "Could not create your account. Please try again." };
+    }
+
+    await createSession(newUser.id, newUser.email, "user", trialStartedAt, false, null);
+    redirect(next || "/dashboard");
+  }
+
+  if (existingUser.is_active === false) {
+    return { error: "This account has been deactivated. Please contact ECO Matrix Solutions." };
+  }
+
+  if (existingUser.trial_paused_at) {
+    return {
+      error: "Your access has been paused by an admin. Please contact ECO Matrix Solutions to resume your account.",
+    };
+  }
+
+  const trialStartedAt = existingUser.trial_started_at;
+  const trialExempt = Boolean(existingUser.trial_exempt);
+
+  if (!trialExempt) {
+    const elapsedMs = Date.now() - new Date(trialStartedAt).getTime();
+    if (elapsedMs > 14 * 24 * 60 * 60 * 1000) {
+      return {
+        error: "Your 14-day free trial has ended. Please contact ECO Matrix Solutions to continue using the ERV Tool.",
+      };
+    }
+  }
+
+  await supabase.from("users").update({ last_login: new Date().toISOString() }).eq("id", existingUser.id);
+  await createSession(existingUser.id, existingUser.email, "user", trialStartedAt, trialExempt, null);
+  redirect(next || "/dashboard");
+}
+
 export async function login(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "")
     .trim()
@@ -26,9 +106,14 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
 
   // Automatic seeding of root admin account if admin credentials are used for the first time
   if (email === "admin@gmail.com") {
-    const { data: adminUser } = await supabase.from("users").select("id, email, password_hash, is_active").eq("email", "admin@gmail.com").single();
+    const { data: adminUser } = await supabase
+      .from("users")
+      .select("id, email, password_hash, is_active, trial_started_at")
+      .eq("email", "admin@gmail.com")
+      .single();
     if (!adminUser) {
       const password_hash = await bcrypt.hash("Ecomatrix@2026", 10);
+      const trialStartedAt = new Date().toISOString();
       const { data: newAdmin } = await supabase
         .from("users")
         .insert({
@@ -36,11 +121,13 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
           password_hash,
           full_name: "System Admin",
           is_active: true,
+          trial_started_at: trialStartedAt,
+          trial_exempt: true,
         })
         .select("id, email, password_hash, is_active")
         .single();
       if (newAdmin && password === "Ecomatrix@2026") {
-        await createSession(newAdmin.id, newAdmin.email, "admin");
+        await createSession(newAdmin.id, newAdmin.email, "admin", trialStartedAt, true, null);
         await supabase.from("users").update({ last_login: new Date().toISOString() }).eq("id", newAdmin.id);
         redirect("/admin");
       }
@@ -49,11 +136,11 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
 
   const { data: user, error } = await supabase
     .from("users")
-    .select("id, email, password_hash, is_active")
+    .select("id, email, password_hash, is_active, trial_started_at, trial_exempt, trial_paused_at")
     .eq("email", email)
     .single();
 
-  if (error || !user || user.is_active === false) {
+  if (error || !user || user.is_active === false || user.trial_paused_at || !user.password_hash) {
     return { error: "Invalid email or password." };
   }
 
@@ -63,7 +150,14 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
   }
 
   const isAdmin = user.email === "admin@gmail.com";
-  await createSession(user.id, user.email, isAdmin ? "admin" : "user");
+  await createSession(
+    user.id,
+    user.email,
+    isAdmin ? "admin" : "user",
+    user.trial_started_at,
+    Boolean(user.trial_exempt),
+    null,
+  );
   await supabase.from("users").update({ last_login: new Date().toISOString() }).eq("id", user.id);
 
   if (isAdmin) {
@@ -148,14 +242,27 @@ export async function resetPasswordWithOtp(_prevState: AuthFormState, formData: 
       password_changed_at: new Date().toISOString(),
     })
     .eq("email", email)
-    .select("id, email")
+    .select("id, email, trial_started_at, trial_exempt, trial_paused_at")
     .single();
 
   if (updateError || !user) {
     return { error: "Could not update password for " + email + ". Account not found." };
   }
 
-  await createSession(user.id, user.email);
+  if (user.trial_paused_at) {
+    return {
+      error: "Your access has been paused by an admin. Please contact ECO Matrix Solutions to resume your account.",
+    };
+  }
+
+  await createSession(
+    user.id,
+    user.email,
+    user.email === "admin@gmail.com" ? "admin" : "user",
+    user.trial_started_at,
+    Boolean(user.trial_exempt),
+    null,
+  );
   redirect("/dashboard");
 }
 

@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Toast, type ToastState } from "@/components/ui/toast";
 
 interface OverviewDashboardProps {
   projects: ProjectAnalyticsData[];
@@ -109,6 +110,7 @@ export function OverviewDashboard({ projects }: { projects: OverviewDashboardPro
   const [selectedTab, setSelectedTab] = useState<"projects" | "resources">("projects");
   const [resourceCategory, setResourceCategory] = useState<string>("All");
   const [previewProject, setPreviewProject] = useState<any>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   // Local state to track finalized selections per project (persisted in localStorage)
   const [finalizedSelections, setFinalizedSelections] = useState<Record<string, string>>({});
@@ -546,7 +548,12 @@ export function OverviewDashboard({ projects }: { projects: OverviewDashboardPro
                 </div>
                 <div className="shrink-0 flex items-center gap-3">
                   <Button
-                    onClick={() => alert("Downloading SolutionAir Regencore Certified Performance Spec Sheet (PDF)...")}
+                    onClick={() =>
+                      setToast({
+                        message: "Downloading SolutionAir Regencore Certified Performance Spec Sheet (PDF)...",
+                        variant: "info",
+                      })
+                    }
                     size="sm"
                     className="bg-amber-400 font-extrabold text-slate-950 hover:bg-amber-300 shadow cursor-pointer"
                   >
@@ -593,7 +600,7 @@ export function OverviewDashboard({ projects }: { projects: OverviewDashboardPro
                     </span>
 
                     <Button
-                      onClick={() => alert(`Opening ${item.title} technical document...`)}
+                      onClick={() => setToast({ message: `Opening ${item.title} technical document...`, variant: "info" })}
                       variant="outline"
                       size="sm"
                       className="gap-1.5 text-xs font-bold border-slate-300 hover:border-[#1E4FD8] cursor-pointer"
@@ -625,6 +632,8 @@ export function OverviewDashboard({ projects }: { projects: OverviewDashboardPro
         }
         projectId={previewProject?.id}
       />
+
+      <Toast state={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { verifySessionCookie, SESSION_COOKIE } from "@/lib/session-edge";
+import { verifySessionCookie, isTrialExpired, SESSION_COOKIE } from "@/lib/session-edge";
 
-const PUBLIC_ROUTES = ["/login", "/", "/how-it-works"];
+const PUBLIC_ROUTES = ["/login", "/admin-login", "/", "/how-it-works"];
 const STATIC_FILE_REGEX = /\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|wav|mp3|m4a|aac|oga|woff|woff2|ttf|eot|css|js|epw|pdf|ico)$/i;
 
 function isPublicRoute(pathname: string): boolean {
@@ -10,22 +10,29 @@ function isPublicRoute(pathname: string): boolean {
   return pathname.startsWith("/api/") || pathname.startsWith("/_next") || pathname.startsWith("/brand");
 }
 
-/** Redirects unauthenticated users away from protected app routes, checking the
- * custom signed session cookie set by src/app/actions/auth.ts's login action. */
+/** Redirects unauthenticated (or trial-expired) users away from protected app
+ * routes, checking the custom signed session cookie set by
+ * src/app/actions/auth.ts's continueWithEmail/login actions. */
 export async function updateSession(request: NextRequest) {
-  // LOGIN TEMPORARILY DISABLED: all routes are open (see getSession in src/lib/session.ts).
-  const LOGIN_DISABLED = true;
-  if (LOGIN_DISABLED || isPublicRoute(request.nextUrl.pathname)) {
+  if (isPublicRoute(request.nextUrl.pathname)) {
     return NextResponse.next({ request });
   }
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const authenticated = await verifySessionCookie(token);
+  const session = await verifySessionCookie(token);
 
-  if (!authenticated) {
+  if (!session) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (isTrialExpired(session)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", request.nextUrl.pathname);
+    url.searchParams.set("trialExpired", "1");
     return NextResponse.redirect(url);
   }
 

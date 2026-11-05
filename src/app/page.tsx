@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { LoginModal } from "@/components/login-modal";
 import { Button } from "@/components/ui/button";
 import {
   Wind,
@@ -63,14 +64,15 @@ const CORE_CAPABILITIES = [
 ];
 
 export default function LandingPage() {
-  const router = useRouter();
-  // LOGIN TEMPORARILY DISABLED: launch goes straight to the dashboard.
+  const [loginOpen, setLoginOpen] = useState(false);
   const handleLaunchClick = () => {
-    router.push("/dashboard");
+    setLoginOpen(true);
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-900 antialiased">
+      <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
+
       {/* Top Header */}
       <SiteHeader onLaunchClick={handleLaunchClick} />
 
@@ -297,7 +299,7 @@ export default function LandingPage() {
       <footer className="border-t border-slate-200 bg-white py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-xs font-semibold text-slate-500 sm:flex-row sm:px-6">
           <div className="flex items-center gap-3">
-            <Image src="/brand/logo.png" alt="Eco Matrix" width={140} height={40} className="h-6 w-auto object-contain" />
+            <Image src="/logo-white.png" alt="Eco Matrix" width={224} height={40} className="h-6 w-auto object-contain" />
             <span>&copy; {new Date().getFullYear()} ECO Matrix Solutions. All rights reserved.</span>
           </div>
 

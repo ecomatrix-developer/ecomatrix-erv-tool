@@ -13,6 +13,9 @@ export interface UserRecord {
   created_at: string;
   last_login: string | null;
   role?: string;
+  trial_started_at: string;
+  trial_exempt: boolean;
+  trial_paused_at: string | null;
 }
 
 export interface AdminWeatherRecord {
@@ -43,7 +46,7 @@ export async function getUsersList(): Promise<{ users?: UserRecord[]; error?: st
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("users")
-    .select("id, email, full_name, is_active, created_at, last_login")
+    .select("id, email, full_name, is_active, created_at, last_login, trial_started_at, trial_exempt, trial_paused_at")
     .order("created_at", { ascending: false });
 
   if (error) return { error: error.message };
@@ -54,6 +57,86 @@ export async function getUsersList(): Promise<{ users?: UserRecord[]; error?: st
   }));
 
   return { users };
+}
+
+/** Admin action: restart a user's 14-day trial clock from right now, clearing any pause. */
+export async function restartUserTrial(userId: string): Promise<{ success?: boolean; error?: string }> {
+  const adminSession = await verifyAdminSession();
+  if (!adminSession) return { error: "Unauthorized access." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("users")
+    .update({ trial_started_at: new Date().toISOString(), trial_paused_at: null })
+    .eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+/**
+ * Admin action: pause a user's access. While paused, continueWithEmail/login (src/app/
+ * actions/auth.ts) refuse to sign them in at all -- the trial clock is also frozen in
+ * place so their remaining days aren't burned while blocked (see resumeUserTrial).
+ */
+export async function pauseUserTrial(userId: string): Promise<{ success?: boolean; error?: string }> {
+  const adminSession = await verifyAdminSession();
+  if (!adminSession) return { error: "Unauthorized access." };
+
+  const supabase = createAdminClient();
+  const { data: user, error: fetchError } = await supabase
+    .from("users")
+    .select("trial_paused_at")
+    .eq("id", userId)
+    .single();
+
+  if (fetchError || !user) return { error: "User not found." };
+  if (user.trial_paused_at) return { error: "Trial is already paused for this user." };
+
+  const { error } = await supabase
+    .from("users")
+    .update({ trial_paused_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+/**
+ * Admin action: resume a paused trial. Shifts trial_started_at forward by however long
+ * it was paused, so the user's remaining days pick back up where they left off instead
+ * of resetting or instantly expiring.
+ */
+export async function resumeUserTrial(userId: string): Promise<{ success?: boolean; error?: string }> {
+  const adminSession = await verifyAdminSession();
+  if (!adminSession) return { error: "Unauthorized access." };
+
+  const supabase = createAdminClient();
+  const { data: user, error: fetchError } = await supabase
+    .from("users")
+    .select("trial_started_at, trial_paused_at")
+    .eq("id", userId)
+    .single();
+
+  if (fetchError || !user) return { error: "User not found." };
+  if (!user.trial_paused_at) return { error: "Trial is not currently paused for this user." };
+
+  const pausedDurationMs = Date.now() - new Date(user.trial_paused_at).getTime();
+  const newTrialStartedAt = new Date(new Date(user.trial_started_at).getTime() + pausedDurationMs).toISOString();
+
+  const { error } = await supabase
+    .from("users")
+    .update({ trial_started_at: newTrialStartedAt, trial_paused_at: null })
+    .eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return { success: true };
 }
 
 /** Admin action to create a new user account */

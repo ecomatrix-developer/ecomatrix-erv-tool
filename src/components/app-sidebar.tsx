@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -14,9 +14,10 @@ import {
   Pin,
   PinOff,
   AlertTriangle,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getCurrentUserSession } from "@/app/actions/auth";
+import { getCurrentUserSession, logout } from "@/app/actions/auth";
 import { useHasUnsavedChanges, setHasUnsavedChanges } from "@/lib/unsaved-changes-store";
 
 const NAV_ITEMS = [
@@ -37,6 +38,22 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const hasUnsavedChanges = useHasUnsavedChanges();
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [isLoggingOut, startLogoutTransition] = useTransition();
+
+  function doLogout() {
+    startLogoutTransition(async () => {
+      await logout();
+    });
+  }
+
+  function handleLogoutClick() {
+    if (hasUnsavedChanges) {
+      setLogoutPending(true);
+      return;
+    }
+    doLogout();
+  }
 
   useEffect(() => {
     setMounted(true);
@@ -62,6 +79,12 @@ export function AppSidebar() {
   }
 
   function leaveAnyway() {
+    if (logoutPending) {
+      setHasUnsavedChanges(false);
+      setLogoutPending(false);
+      doLogout();
+      return;
+    }
     if (!pendingHref) return;
     setHasUnsavedChanges(false);
     router.push(pendingHref);
@@ -85,12 +108,12 @@ export function AppSidebar() {
           <div className="flex items-center justify-center px-4 py-6 w-full min-h-[72px]">
             {expanded ? (
               <Image
-                src="/brand/logo-light.png"
+                src="/logo-white.png"
                 alt="Eco Matrix"
-                width={200}
-                height={60}
+                width={176}
+                height={31}
                 priority
-                className="h-14 w-auto max-w-full shrink-0 object-contain mx-auto"
+                className="h-auto w-[176px] max-w-full shrink-0 object-contain mx-auto"
               />
             ) : (
               <Image
@@ -142,12 +165,26 @@ export function AppSidebar() {
             {pinned ? <PinOff className="size-[18px] shrink-0" /> : <Pin className="size-[18px] shrink-0" />}
             {expanded && <span>{pinned ? "Unpin" : "Pin open"}</span>}
           </button>
+
+          <button
+            type="button"
+            onClick={handleLogoutClick}
+            disabled={isLoggingOut}
+            title={!expanded ? "Log out" : undefined}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-60",
+              !expanded && "justify-center px-0",
+            )}
+          >
+            <LogOut className="size-[18px] shrink-0" />
+            {expanded && <span>{isLoggingOut ? "Logging out..." : "Log out"}</span>}
+          </button>
         </div>
       </aside>
 
-      {pendingHref && (() => {
+      {(pendingHref || logoutPending) && (() => {
         const targetNav = NAV_ITEMS.find((n) => n.href === pendingHref);
-        const targetLabel = targetNav ? targetNav.label : "another page";
+        const targetLabel = logoutPending ? "the Home Page" : targetNav ? targetNav.label : "another page";
         return (
           <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
@@ -166,7 +203,10 @@ export function AppSidebar() {
               <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
                 <button
                   type="button"
-                  onClick={() => setPendingHref(null)}
+                  onClick={() => {
+                    setPendingHref(null);
+                    setLogoutPending(false);
+                  }}
                   className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   Stay on Simulator
@@ -176,7 +216,7 @@ export function AppSidebar() {
                   onClick={leaveAnyway}
                   className="rounded-xl bg-[#1E4FD8] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition-colors cursor-pointer"
                 >
-                  Proceed to {targetLabel.split(" ")[0]}
+                  {logoutPending ? "Log Out Anyway" : `Proceed to ${targetLabel.split(" ")[0]}`}
                 </button>
               </div>
             </div>

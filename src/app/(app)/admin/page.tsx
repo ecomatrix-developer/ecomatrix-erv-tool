@@ -17,6 +17,10 @@ import {
   AlertCircle,
   Search,
   RefreshCw,
+  RotateCcw,
+  PauseCircle,
+  PlayCircle,
+  Clock,
 } from "lucide-react";
 import { parseEpwFile, type ParsedEpw } from "@/lib/epw-parser";
 import {
@@ -25,6 +29,9 @@ import {
   deleteAdminUserAccount,
   changeUserPassword,
   toggleUserStatus,
+  restartUserTrial,
+  pauseUserTrial,
+  resumeUserTrial,
   adminUploadGlobalWeather,
   listGlobalWeatherFiles,
   deleteGlobalWeatherFile,
@@ -32,7 +39,17 @@ import {
   type AdminWeatherRecord,
 } from "@/app/actions/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmDialog, type ConfirmDialogState } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
+
+const TRIAL_DURATION_DAYS = 14;
+
+function trialDaysRemaining(trialStartedAt: string): number {
+  const startedAt = new Date(trialStartedAt).getTime();
+  if (Number.isNaN(startedAt)) return 0;
+  const remainingMs = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000 - (Date.now() - startedAt);
+  return Math.max(0, Math.ceil(remainingMs / (24 * 60 * 60 * 1000)));
+}
 
 export default function AdminPage() {
   const router = useRouter();
@@ -53,7 +70,7 @@ export default function AdminPage() {
   const [changePasswordVal, setChangePasswordVal] = useState("");
   const [submittingPass, setSubmittingPass] = useState(false);
 
-  const [deleteUserConfirm, setDeleteUserConfirm] = useState<UserRecord | null>(null);
+  const [confirmState, setConfirmState] = useState<ConfirmDialogState | null>(null);
 
   // Weather Upload States
   const [parsedWeather, setParsedWeather] = useState<{
@@ -119,15 +136,14 @@ export default function AdminPage() {
     }
   }
 
-  async function handleDeleteUser() {
-    if (!deleteUserConfirm) return;
+  async function doDeleteUser(userId: string, email: string) {
+    setConfirmState(null);
     setNotice(null);
-    const res = await deleteAdminUserAccount(deleteUserConfirm.id);
+    const res = await deleteAdminUserAccount(userId);
     if (res.error) {
       setNotice({ type: "error", text: res.error });
     } else {
-      setNotice({ type: "success", text: `User account ${deleteUserConfirm.email} deleted.` });
-      setDeleteUserConfirm(null);
+      setNotice({ type: "success", text: `User account ${email} deleted.` });
       loadData();
     }
   }
@@ -140,6 +156,60 @@ export default function AdminPage() {
       setNotice({ type: "error", text: res.error });
     } else {
       setNotice({ type: "success", text: `User ${user.email} is now ${nextStatus ? "Active" : "Disabled"}.` });
+      loadData();
+    }
+  }
+
+  function handleRestartTrial(user: UserRecord) {
+    setConfirmState({
+      title: "Restart Trial",
+      description: `Restart the 14-day trial for ${user.email} starting now?`,
+      confirmLabel: "Restart Trial",
+      onConfirm: () => doRestartTrial(user),
+    });
+  }
+
+  async function doRestartTrial(user: UserRecord) {
+    setConfirmState(null);
+    setNotice(null);
+    const res = await restartUserTrial(user.id);
+    if (res.error) {
+      setNotice({ type: "error", text: res.error });
+    } else {
+      setNotice({ type: "success", text: `Trial restarted for ${user.email}. New 14-day period starts now.` });
+      loadData();
+    }
+  }
+
+  function handlePauseTrial(user: UserRecord) {
+    setConfirmState({
+      title: "Pause User Access",
+      description: `Pause access for ${user.email}? They will not be able to sign in until you resume it, and their remaining trial days will be held until then.`,
+      confirmLabel: "Pause Access",
+      variant: "danger",
+      onConfirm: () => doPauseTrial(user),
+    });
+  }
+
+  async function doPauseTrial(user: UserRecord) {
+    setConfirmState(null);
+    setNotice(null);
+    const res = await pauseUserTrial(user.id);
+    if (res.error) {
+      setNotice({ type: "error", text: res.error });
+    } else {
+      setNotice({ type: "success", text: `Access paused for ${user.email}. They cannot sign in until resumed.` });
+      loadData();
+    }
+  }
+
+  async function handleResumeTrial(user: UserRecord) {
+    setNotice(null);
+    const res = await resumeUserTrial(user.id);
+    if (res.error) {
+      setNotice({ type: "error", text: res.error });
+    } else {
+      setNotice({ type: "success", text: `Access resumed for ${user.email}. They can sign in again.` });
       loadData();
     }
   }
@@ -181,8 +251,18 @@ export default function AdminPage() {
     }
   }
 
-  async function handleDeleteGlobalWeather(id: string, name: string) {
-    if (!confirm(`Are you sure you want to remove global weather location "${name}"?`)) return;
+  function handleDeleteGlobalWeather(id: string, name: string) {
+    setConfirmState({
+      title: "Remove Weather Location",
+      description: `Are you sure you want to remove global weather location "${name}"?`,
+      confirmLabel: "Remove",
+      variant: "danger",
+      onConfirm: () => doDeleteGlobalWeather(id, name),
+    });
+  }
+
+  async function doDeleteGlobalWeather(id: string, name: string) {
+    setConfirmState(null);
     setNotice(null);
     const res = await deleteGlobalWeatherFile(id);
     if (res.error) {
@@ -333,7 +413,7 @@ export default function AdminPage() {
                   <th className="px-4 py-3">User Email / Account</th>
                   <th className="px-4 py-3">Full Name</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Created Date</th>
+                  <th className="px-4 py-3">Trial (Signed Up)</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -373,8 +453,40 @@ export default function AdminPage() {
                             {u.is_active !== false ? "Active" : "Disabled"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-400">
-                          {new Date(u.created_at).toLocaleDateString()}
+                        <td className="px-4 py-3">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1 text-slate-400">
+                              <Clock className="size-3 shrink-0" />
+                              {new Date(u.trial_started_at).toLocaleString()}
+                            </div>
+                            {isAdmin || u.trial_exempt ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-400 border border-blue-500/20">
+                                <ShieldCheck className="size-3" /> Exempt
+                              </span>
+                            ) : u.trial_paused_at ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400 border border-amber-500/20">
+                                <PauseCircle className="size-3" /> Paused
+                              </span>
+                            ) : (
+                              (() => {
+                                const days = trialDaysRemaining(u.trial_started_at);
+                                return (
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border",
+                                      days <= 0
+                                        ? "bg-red-500/10 text-red-400 border-red-500/20"
+                                        : days <= 3
+                                          ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                          : "bg-slate-500/10 text-slate-300 border-slate-500/20"
+                                    )}
+                                  >
+                                    {days <= 0 ? "Expired" : `${days} day${days === 1 ? "" : "s"} left`}
+                                  </span>
+                                );
+                              })()
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -392,6 +504,40 @@ export default function AdminPage() {
                               <>
                                 <button
                                   type="button"
+                                  onClick={() => handleRestartTrial(u)}
+                                  title="Restart 14-day trial from now"
+                                  className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+                                >
+                                  <RotateCcw className="size-3 text-blue-400" />
+                                  Restart Trial
+                                </button>
+
+                                {u.trial_paused_at ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResumeTrial(u)}
+                                    title="Resume trial clock"
+                                    className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+                                  >
+                                    <PlayCircle className="size-3 text-emerald-400" />
+                                    Resume
+                                  </button>
+                                ) : (
+                                  !u.trial_exempt && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handlePauseTrial(u)}
+                                      title="Pause trial clock"
+                                      className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+                                    >
+                                      <PauseCircle className="size-3 text-amber-400" />
+                                      Pause
+                                    </button>
+                                  )
+                                )}
+
+                                <button
+                                  type="button"
                                   onClick={() => handleToggleStatus(u)}
                                   title={u.is_active !== false ? "Disable User" : "Activate User"}
                                   className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] font-bold text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer"
@@ -401,7 +547,15 @@ export default function AdminPage() {
 
                                 <button
                                   type="button"
-                                  onClick={() => setDeleteUserConfirm(u)}
+                                  onClick={() =>
+                                    setConfirmState({
+                                      title: "Confirm Delete User Account",
+                                      description: `Are you sure you want to permanently delete user account ${u.email}? This action cannot be undone.`,
+                                      confirmLabel: "Delete Account",
+                                      variant: "danger",
+                                      onConfirm: () => doDeleteUser(u.id, u.email),
+                                    })
+                                  }
                                   title="Delete User Account"
                                   className="rounded-md bg-red-600/20 border border-red-500/30 p-1 text-red-400 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
                                 >
@@ -687,36 +841,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
-      {deleteUserConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-red-400 flex items-center gap-2">
-              <Trash2 className="size-5" />
-              Confirm Delete User Account
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Are you sure you want to permanently delete user account <strong className="text-white">{deleteUserConfirm.email}</strong>? This action cannot be undone.
-            </p>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setDeleteUserConfirm(null)}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-bold text-slate-300 hover:bg-slate-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteUser}
-                className="rounded-lg bg-red-600 hover:bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-md"
-              >
-                Delete Account
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog state={confirmState} onCancel={() => setConfirmState(null)} />
     </div>
   );
 }
