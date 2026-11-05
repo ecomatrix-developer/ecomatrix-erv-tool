@@ -12,6 +12,12 @@ export interface AuthFormState {
   message?: string;
 }
 
+/** Appends ?welcome=1 to a post-login destination so the client can show a one-time
+ * "Welcome, {email}" toast (src/components/trial-status.tsx) right after sign-in. */
+function withWelcomeFlag(path: string): string {
+  return `${path}${path.includes("?") ? "&" : "?"}welcome=1`;
+}
+
 /**
  * Passwordless "Launch ERV Tool" gate: one email field, no password. Unknown
  * emails are signed up on the spot (trial_started_at = now) and known emails are
@@ -69,7 +75,7 @@ export async function continueWithEmail(_prevState: AuthFormState, formData: For
     }
 
     await createSession(newUser.id, newUser.email, "user", trialStartedAt, false, null);
-    redirect(next || "/dashboard");
+    redirect(withWelcomeFlag(next || "/dashboard"));
   }
 
   if (existingUser.is_active === false) {
@@ -96,7 +102,7 @@ export async function continueWithEmail(_prevState: AuthFormState, formData: For
 
   await supabase.from("users").update({ last_login: new Date().toISOString() }).eq("id", existingUser.id);
   await createSession(existingUser.id, existingUser.email, "user", trialStartedAt, trialExempt, null);
-  redirect(next || "/dashboard");
+  redirect(withWelcomeFlag(next || "/dashboard"));
 }
 
 export async function login(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -137,7 +143,7 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
       if (newAdmin && password === "Ecomatrix@2026") {
         await createSession(newAdmin.id, newAdmin.email, "admin", trialStartedAt, true, null);
         await supabase.from("users").update({ last_login: new Date().toISOString() }).eq("id", newAdmin.id);
-        redirect("/admin");
+        redirect(withWelcomeFlag("/admin"));
       }
     }
   }
@@ -169,10 +175,10 @@ export async function login(_prevState: AuthFormState, formData: FormData): Prom
   await supabase.from("users").update({ last_login: new Date().toISOString() }).eq("id", user.id);
 
   if (isAdmin) {
-    redirect("/admin");
+    redirect(withWelcomeFlag("/admin"));
   }
 
-  redirect(next || "/dashboard");
+  redirect(withWelcomeFlag(next || "/dashboard"));
 }
 
 export async function requestPasswordReset(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -271,7 +277,7 @@ export async function resetPasswordWithOtp(_prevState: AuthFormState, formData: 
     Boolean(user.trial_exempt),
     null,
   );
-  redirect("/dashboard");
+  redirect(withWelcomeFlag("/dashboard"));
 }
 
 export async function getCurrentUserSession() {
@@ -281,6 +287,7 @@ export async function getCurrentUserSession() {
 
 export interface TrialStatus {
   userId: string;
+  email: string;
   trialStartedAt: string;
   trialExempt: boolean;
   trialPausedAt: string | null;
@@ -301,7 +308,7 @@ export async function getTrialStatus(): Promise<TrialStatus | null> {
   const supabase = createAdminClient();
   const { data: user, error } = await supabase
     .from("users")
-    .select("trial_started_at, trial_exempt, trial_paused_at")
+    .select("email, trial_started_at, trial_exempt, trial_paused_at")
     .eq("id", userId)
     .single();
 
@@ -309,6 +316,7 @@ export async function getTrialStatus(): Promise<TrialStatus | null> {
 
   return {
     userId,
+    email: user.email,
     trialStartedAt: user.trial_started_at,
     trialExempt: Boolean(user.trial_exempt),
     trialPausedAt: user.trial_paused_at,

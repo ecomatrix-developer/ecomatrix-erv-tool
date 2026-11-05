@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { FloatingCalculator } from "@/components/floating-calculator";
 import { TrialStatus } from "@/components/trial-status";
@@ -8,7 +9,9 @@ export default function AppGroupLayout({ children }: { children: React.ReactNode
       <AppSidebar />
       <main className="min-w-0 flex-1 overflow-x-hidden">{children}</main>
       <FloatingCalculator />
-      <TrialStatus />
+      <Suspense>
+        <TrialStatus />
+      </Suspense>
     </div>
   );
 }
