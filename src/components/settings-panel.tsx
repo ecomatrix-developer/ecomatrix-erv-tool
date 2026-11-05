@@ -17,7 +17,6 @@ import {
   Loader2,
   CheckCircle2,
   LogOut,
-  KeyRound,
   FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -138,26 +137,9 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Account Email</span>
-            <p className="mt-1 text-base font-extrabold text-slate-900">{userEmail || "User Account"}</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Password Security</span>
-              <p className="mt-1 text-sm font-semibold text-slate-700">Encrypted Hash &amp; OTP</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setMessage({ type: "success", text: "Password reset OTP sent to your registered email address." })}
-              className="gap-1.5 border-slate-300 font-semibold cursor-pointer"
-            >
-              <KeyRound className="size-4 text-[#1E4FD8]" /> Reset Password
-            </Button>
-          </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Account Email</span>
+          <p className="mt-1 text-base font-extrabold text-slate-900">{userEmail || "User Account"}</p>
         </div>
       </div>
 
