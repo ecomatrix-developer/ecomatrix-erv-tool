@@ -18,9 +18,9 @@ function AdminLoginForm() {
         <div className="flex flex-col items-center text-center">
           <Link href="/" className="mb-4 inline-block transition-transform hover:scale-105">
             <Image
-              src="/logo-white.png"
+              src="/logo.png"
               alt="Eco Matrix Solutions"
-              width={280}
+              width={267}
               height={50}
               priority
               className="h-10 w-auto object-contain"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PartyPopper, Clock, PauseCircle, X } from "lucide-react";
-import { getCurrentUserSession } from "@/app/actions/auth";
+import { getTrialStatus } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 
 const BLUE = "#1E4FD8";
@@ -26,7 +26,16 @@ function daysRemaining(trialStartedAt: string): number {
  * - Persistent "N days left" pill, top-right corner of every page.
  * - Full welcome modal, shown once per browser tab right after signup.
  * - Small "welcome back" reminder toast, shown once per browser tab on a returning login.
+ *
+ * Trial fields are re-fetched live from the database (getTrialStatus) on this interval,
+ * not just recomputed from a value cached at mount -- both because the badge would
+ * otherwise freeze at whatever day count was true when the page first loaded (this
+ * component stays mounted across client-side navigation for as long as the tab is
+ * open), and because an admin editing trial_started_at/trial_exempt/trial_paused_at
+ * directly in Supabase should show up without the user needing to log out and back in.
  */
+const REFRESH_INTERVAL_MS = 60 * 1000;
+
 export function TrialStatus() {
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -37,15 +46,14 @@ export function TrialStatus() {
   useEffect(() => {
     let dismissTimer: ReturnType<typeof setTimeout> | undefined;
 
-    getCurrentUserSession().then((session) => {
-      if (!session?.trialStartedAt || session.trialExempt) return;
+    function applyStatus(status: Awaited<ReturnType<typeof getTrialStatus>>) {
+      if (!status || status.trialExempt) return;
 
-      const trialStartedAt = session.trialStartedAt as string;
-      const startedAt = new Date(trialStartedAt).getTime();
+      const startedAt = new Date(status.trialStartedAt).getTime();
       if (Number.isNaN(startedAt)) return;
 
-      setIsPaused(Boolean(session.trialPausedAt));
-      setDaysLeft(daysRemaining(trialStartedAt));
+      setIsPaused(Boolean(status.trialPausedAt));
+      setDaysLeft(daysRemaining(status.trialStartedAt));
       setTrialEndsLabel(
         new Date(startedAt + TRIAL_DURATION_MS).toLocaleDateString(undefined, {
           year: "numeric",
@@ -54,10 +62,17 @@ export function TrialStatus() {
         }),
       );
 
+      return startedAt;
+    }
+
+    getTrialStatus().then((status) => {
+      const startedAt = applyStatus(status);
+      if (!status || startedAt === undefined) return;
+
       const isFreshSignup = Date.now() - startedAt < FRESH_SIGNUP_WINDOW_MS;
       const shownKey = isFreshSignup
-        ? `erv_welcome_shown_${session.userId}`
-        : `erv_trial_reminder_shown_${session.userId}`;
+        ? `erv_welcome_shown_${status.userId}`
+        : `erv_trial_reminder_shown_${status.userId}`;
       if (sessionStorage.getItem(shownKey)) return;
       sessionStorage.setItem(shownKey, "1");
 
@@ -69,7 +84,14 @@ export function TrialStatus() {
       }
     });
 
-    return () => clearTimeout(dismissTimer);
+    const interval = setInterval(() => {
+      getTrialStatus().then(applyStatus);
+    }, REFRESH_INTERVAL_MS);
+
+    return () => {
+      clearTimeout(dismissTimer);
+      clearInterval(interval);
+    };
   }, []);
 
   return (

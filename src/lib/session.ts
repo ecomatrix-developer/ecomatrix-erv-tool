@@ -95,6 +95,19 @@ export async function getSession(): Promise<SessionPayload | null> {
   return payload;
 }
 
+/**
+ * Identifies the signed-in user from the cookie alone, without the isTrialExpired
+ * gate getSession() applies. Used by getTrialStatus() (src/app/actions/auth.ts),
+ * which needs to know *who* is asking even if their cookie's stale trial snapshot
+ * would otherwise look expired -- it's about to replace that snapshot with a fresh
+ * read from the database anyway.
+ */
+export async function getAuthenticatedUserId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const payload = await decrypt(cookieStore.get(SESSION_COOKIE)?.value);
+  return payload?.userId ?? null;
+}
+
 export async function deleteSession() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);

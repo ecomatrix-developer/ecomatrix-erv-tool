@@ -170,9 +170,9 @@ export function ReportPreviewModal({
                 <div>
                   <div className="mb-2">
                     <Image
-                      src="/logo-white.png"
+                      src="/logo.png"
                       alt="Eco Matrix"
-                      width={252}
+                      width={241}
                       height={45}
                       className="h-9 w-auto object-contain"
                     />

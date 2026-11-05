@@ -14,8 +14,7 @@ alter table public.users
 
 update public.users
   set trial_started_at = created_at
-  where trial_started_at is distinct from created_at
-    and trial_started_at is null;
+  where trial_started_at is distinct from created_at;
 
 -- Accounts flagged trial_exempt never get locked out after 14 days (internal /
 -- admin / VIP accounts).

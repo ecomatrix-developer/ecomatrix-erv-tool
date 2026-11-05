@@ -52,9 +52,9 @@ export function AuthForm() {
         <div className="flex flex-col items-center text-center">
           <Link href="/" className="mb-4 inline-block transition-transform hover:scale-105">
             <Image
-              src="/logo-white.png"
+              src="/logo.png"
               alt="Eco Matrix"
-              width={336}
+              width={321}
               height={60}
               priority
               className="h-12 w-auto object-contain"

@@ -100,18 +100,18 @@ export function AppSidebar() {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          "fixed top-0 left-0 z-[100] flex h-screen flex-col justify-between bg-slate-800 text-white shadow-xl transition-[width] duration-200 ease-out",
+          "fixed top-0 left-0 z-[100] flex h-screen flex-col justify-between border-r border-slate-200 bg-white text-slate-900 shadow-xl transition-[width] duration-200 ease-out",
           expanded ? "w-60" : "w-[68px]",
         )}
       >
         <div>
-          <div className="flex items-center justify-center px-4 py-6 w-full min-h-[72px]">
+          <div className="flex items-center justify-center border-b border-slate-100 px-4 py-6 w-full min-h-[72px]">
             {expanded ? (
               <Image
-                src="/logo-white.png"
+                src="/logo.png"
                 alt="Eco Matrix"
                 width={176}
-                height={31}
+                height={33}
                 priority
                 className="h-auto w-[176px] max-w-full shrink-0 object-contain mx-auto"
               />
@@ -141,7 +141,7 @@ export function AppSidebar() {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors",
                     !expanded && "justify-center px-0",
-                    active ? "bg-[#1E4FD8] text-white" : "text-slate-400 hover:bg-white/5 hover:text-slate-200",
+                    active ? "bg-[#1E4FD8] text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                   )}
                 >
                   <item.icon className="size-[18px] shrink-0" />
@@ -152,13 +152,13 @@ export function AppSidebar() {
           </nav>
         </div>
 
-        <div className="space-y-1 px-3 pb-4">
+        <div className="space-y-1 border-t border-slate-100 px-3 py-4">
           <button
             type="button"
             onClick={() => setPinned((p) => !p)}
             title={!expanded ? "Pin sidebar open" : undefined}
             className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200",
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900",
               !expanded && "justify-center px-0",
             )}
           >
@@ -172,7 +172,7 @@ export function AppSidebar() {
             disabled={isLoggingOut}
             title={!expanded ? "Log out" : undefined}
             className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-60",
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-60",
               !expanded && "justify-center px-0",
             )}
           >

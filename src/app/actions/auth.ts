@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createSession, deleteSession, getSession } from "@/lib/session";
+import { createSession, deleteSession, getSession, getAuthenticatedUserId } from "@/lib/session";
 
 export interface AuthFormState {
   error?: string;
@@ -269,6 +269,42 @@ export async function resetPasswordWithOtp(_prevState: AuthFormState, formData: 
 export async function getCurrentUserSession() {
   const session = await getSession();
   return session;
+}
+
+export interface TrialStatus {
+  userId: string;
+  trialStartedAt: string;
+  trialExempt: boolean;
+  trialPausedAt: string | null;
+}
+
+/**
+ * Live trial status straight from the database, instead of the signed session
+ * cookie's snapshot from whenever the user last logged in. The cookie is only
+ * refreshed at login, so an admin editing trial_started_at/trial_exempt/
+ * trial_paused_at directly in Supabase wouldn't otherwise show up until the
+ * user's next sign-in -- this is what the trial-days badge calls so changes
+ * are reflected immediately instead.
+ */
+export async function getTrialStatus(): Promise<TrialStatus | null> {
+  const userId = await getAuthenticatedUserId();
+  if (!userId) return null;
+
+  const supabase = createAdminClient();
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("trial_started_at, trial_exempt, trial_paused_at")
+    .eq("id", userId)
+    .single();
+
+  if (error || !user) return null;
+
+  return {
+    userId,
+    trialStartedAt: user.trial_started_at,
+    trialExempt: Boolean(user.trial_exempt),
+    trialPausedAt: user.trial_paused_at,
+  };
 }
 
 export async function logout() {
