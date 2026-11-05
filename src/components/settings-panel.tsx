@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   deleteAllProjectsAction,
-  clearOldDataAction,
   deleteAccountAction,
 } from "@/app/actions/settings";
 import { logout } from "@/app/actions/auth";
@@ -17,7 +16,6 @@ import {
   Loader2,
   CheckCircle2,
   LogOut,
-  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,25 +29,7 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Confirmation modal states
-  const [confirmModal, setConfirmModal] = useState<"clearData" | "deleteAllProjects" | "deleteAccount" | null>(null);
-
-  async function handleClearOldData() {
-    setLoadingAction("clearData");
-    setMessage(null);
-    try {
-      const res = await clearOldDataAction();
-      if (res.success) {
-        setMessage({ type: "success", text: res.message });
-      } else {
-        setMessage({ type: "error", text: res.message });
-      }
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "Failed to clear old data." });
-    } finally {
-      setLoadingAction(null);
-      setConfirmModal(null);
-    }
-  }
+  const [confirmModal, setConfirmModal] = useState<"deleteAllProjects" | "deleteAccount" | null>(null);
 
   async function handleDeleteAllProjects() {
     setLoadingAction("deleteAllProjects");
@@ -97,7 +77,7 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
           <Shield className="size-7 text-[#1E4FD8]" /> Account &amp; Platform Settings
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Manage your account profile, calculation cache preferences, and data cleanup operations.
+          Manage your account profile and project data.
         </p>
       </div>
 
@@ -151,30 +131,11 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-900">Project &amp; Calculation Data Maintenance</h2>
-            <p className="text-xs text-slate-500">Manage saved scenarios, old calculation records, and workspace cleanup</p>
+            <p className="text-xs text-slate-500">Manage your saved projects and scenarios</p>
           </div>
         </div>
 
         <div className="space-y-4">
-          {/* Clear Old Data Option */}
-          <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 sm:flex-row sm:items-center">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="size-4 text-amber-600" /> Clear Old Calculation Cache &amp; History
-              </h3>
-              <p className="mt-1 text-xs text-slate-500">
-                Wipes stored temporary calculation states and old hourly simulation history without deleting project names.
-              </p>
-            </div>
-            <Button
-              onClick={() => setConfirmModal("clearData")}
-              variant="outline"
-              className="gap-2 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 font-bold shrink-0 cursor-pointer"
-            >
-              Clear Old Cache
-            </Button>
-          </div>
-
           {/* Delete All Projects Option */}
           <div className="flex flex-col justify-between gap-4 rounded-2xl border border-red-200 bg-red-50/40 p-5 sm:flex-row sm:items-center">
             <div>
@@ -246,7 +207,6 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  {confirmModal === "clearData" && "Clear Old Data Cache?"}
                   {confirmModal === "deleteAllProjects" && "Delete All Projects?"}
                   {confirmModal === "deleteAccount" && "Permanently Delete Account?"}
                 </h3>
@@ -255,8 +215,6 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              {confirmModal === "clearData" &&
-                "This action will clear stored scenario calculation history and temporary cache. Your project names will remain intact."}
               {confirmModal === "deleteAllProjects" &&
                 "Are you sure you want to permanently delete all your saved projects and scenario options? This action cannot be undone."}
               {confirmModal === "deleteAccount" &&
@@ -276,7 +234,6 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
               <button
                 type="button"
                 onClick={() => {
-                  if (confirmModal === "clearData") handleClearOldData();
                   if (confirmModal === "deleteAllProjects") handleDeleteAllProjects();
                   if (confirmModal === "deleteAccount") handleDeleteAccount();
                 }}
