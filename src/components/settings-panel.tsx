@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  deleteAllProjectsAction,
-  deleteAccountAction,
-} from "@/app/actions/settings";
-import { logout } from "@/app/actions/auth";
+import { deleteAllProjectsAction } from "@/app/actions/settings";
 import {
   User,
   Trash2,
@@ -15,9 +11,7 @@ import {
   Shield,
   Loader2,
   CheckCircle2,
-  LogOut,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface SettingsPanelProps {
   userEmail: string;
@@ -28,8 +22,7 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Confirmation modal states
-  const [confirmModal, setConfirmModal] = useState<"deleteAllProjects" | "deleteAccount" | null>(null);
+  const [confirmModal, setConfirmModal] = useState<"deleteAllProjects" | null>(null);
 
   async function handleDeleteAllProjects() {
     setLoadingAction("deleteAllProjects");
@@ -45,25 +38,6 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
     } catch (err: any) {
       setMessage({ type: "error", text: err.message || "Failed to delete projects." });
     } finally {
-      setLoadingAction(null);
-      setConfirmModal(null);
-    }
-  }
-
-  async function handleDeleteAccount() {
-    setLoadingAction("deleteAccount");
-    setMessage(null);
-    try {
-      const res = await deleteAccountAction();
-      if (res.success) {
-        router.push("/");
-      } else {
-        setMessage({ type: "error", text: res.message });
-        setLoadingAction(null);
-        setConfirmModal(null);
-      }
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "Failed to delete account." });
       setLoadingAction(null);
       setConfirmModal(null);
     }
@@ -137,61 +111,21 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
 
         <div className="space-y-4">
           {/* Delete All Projects Option */}
-          <div className="flex flex-col justify-between gap-4 rounded-2xl border border-red-200 bg-red-50/40 p-5 sm:flex-row sm:items-center">
+          <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 sm:flex-row sm:items-center">
             <div>
-              <h3 className="text-sm font-bold text-red-950 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Trash2 className="size-4 text-red-600" /> Delete All Projects &amp; Scenarios
               </h3>
-              <p className="mt-1 text-xs text-red-700">
+              <p className="mt-1 text-xs text-slate-500">
                 Permanently deletes every saved project, scenario input, and visual report under your account.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setConfirmModal("deleteAllProjects")}
-              className="gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-extrabold text-xs shrink-0 cursor-pointer transition-colors shadow-sm"
+              className="gap-2 px-5 py-2.5 rounded-xl border border-red-300 bg-white text-red-700 hover:bg-red-50 font-bold text-xs shrink-0 cursor-pointer transition-colors"
             >
               Delete All Projects
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. DANGER ZONE */}
-      <div className="rounded-3xl border border-red-200 bg-red-50/60 p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-red-200/80 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-700">
-              <AlertTriangle className="size-6" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-red-950">Danger Zone: Account Deletion &amp; Sign Out</h2>
-              <p className="text-xs text-red-700">Irreversible account actions and session management</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-red-950">Delete Account &amp; Wipe All Associated Data</h3>
-            <p className="text-xs text-red-700 mt-0.5">
-              Permanently removes your account login, project history, and revokes your active session.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <form action={logout}>
-              <Button type="submit" variant="outline" className="gap-2 border-slate-300 font-bold text-slate-800 cursor-pointer">
-                <LogOut className="size-4" /> Sign Out
-              </Button>
-            </form>
-
-            <button
-              type="button"
-              onClick={() => setConfirmModal("deleteAccount")}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-red-700 hover:bg-red-800 active:bg-red-900 text-white font-extrabold text-xs cursor-pointer transition-colors shadow-sm"
-            >
-              <Trash2 className="size-4" /> Delete Account
             </button>
           </div>
         </div>
@@ -206,19 +140,13 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
                 <AlertTriangle className="size-6" />
               </div>
               <div>
-                <h3 className="text-base font-extrabold text-slate-900">
-                  {confirmModal === "deleteAllProjects" && "Delete All Projects?"}
-                  {confirmModal === "deleteAccount" && "Permanently Delete Account?"}
-                </h3>
+                <h3 className="text-base font-extrabold text-slate-900">Delete All Projects?</h3>
                 <p className="text-xs text-slate-500">In-app confirmation</p>
               </div>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              {confirmModal === "deleteAllProjects" &&
-                "Are you sure you want to permanently delete all your saved projects and scenario options? This action cannot be undone."}
-              {confirmModal === "deleteAccount" &&
-                "WARNING: This will permanently delete your account profile, all projects, and end your session immediately. This action CANNOT be reversed."}
+              Are you sure you want to permanently delete all your saved projects and scenario options? This action cannot be undone.
             </p>
 
             <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
@@ -233,10 +161,7 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (confirmModal === "deleteAllProjects") handleDeleteAllProjects();
-                  if (confirmModal === "deleteAccount") handleDeleteAccount();
-                }}
+                onClick={handleDeleteAllProjects}
                 disabled={loadingAction !== null}
                 className="flex items-center gap-1.5 rounded-xl bg-red-600 px-5 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-red-700 transition-colors cursor-pointer"
               >
