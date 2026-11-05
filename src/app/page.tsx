@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
 import { LoginModal } from "@/components/login-modal";
 import { Button } from "@/components/ui/button";
@@ -298,10 +297,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="border-t border-slate-200 bg-white py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-xs font-semibold text-slate-500 sm:flex-row sm:px-6">
-          <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Eco Matrix" width={214} height={40} className="h-6 w-auto object-contain" />
-            <span>&copy; {new Date().getFullYear()} ECO Matrix Solutions. All rights reserved.</span>
-          </div>
+          <span>&copy; {new Date().getFullYear()} ECO Matrix Solutions. All rights reserved.</span>
 
           <div className="flex items-center gap-6">
             <button onClick={handleLaunchClick} className="hover:text-slate-900 transition-colors">
