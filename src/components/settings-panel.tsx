@@ -75,18 +75,18 @@ export function SettingsPanel({ userEmail }: SettingsPanelProps) {
 
       {/* 1. PROFILE & ACCOUNT CARD */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-blue-50 text-[#1E4FD8]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#1E4FD8]">
               <User className="size-6" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-base font-bold text-slate-900">User Profile &amp; Authentication</h2>
               <p className="text-xs text-slate-500">Your registered ECO Matrix account session</p>
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" /> Active Session
           </span>
         </div>

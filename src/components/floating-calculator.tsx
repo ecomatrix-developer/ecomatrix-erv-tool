@@ -270,7 +270,7 @@ export function FloatingCalculator() {
       {isOpen && (
         <div
           onMouseLeave={() => setIsOpen(false)}
-          className="fixed top-[65%] -translate-y-1/2 right-10 z-50 w-76 max-w-[calc(100vw-3rem)] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-md shadow-xl overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-right-4"
+          className="fixed top-[65%] right-10 z-50 max-h-[85vh] w-76 max-w-[calc(100vw-3rem)] -translate-y-1/2 overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white/95 backdrop-blur-md shadow-xl transition-all duration-300 animate-in fade-in slide-in-from-right-4"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-3 py-2 text-white">

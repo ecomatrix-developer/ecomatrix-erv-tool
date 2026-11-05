@@ -310,8 +310,8 @@ export function OverviewDashboard({ projects }: { projects: OverviewDashboardPro
       )}
 
       {/* MAIN CONTENT NAVIGATION TABS (Projects vs Vendor Resources) */}
-      <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
-        <div className="flex items-center gap-3">
+      <div className="mb-6 flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => setSelectedTab("projects")}
@@ -342,7 +342,7 @@ export function OverviewDashboard({ projects }: { projects: OverviewDashboardPro
 
         <Link
           href="/simulator"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition-colors cursor-pointer"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition-colors cursor-pointer"
         >
           + New Project Simulation
         </Link>

@@ -298,15 +298,15 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6 space-y-6">
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 space-y-6 sm:p-6">
       {/* Top Admin Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-600/20 text-[#1E4FD8] border border-blue-500/30">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600/20 text-[#1E4FD8] border border-blue-500/30">
             <ShieldCheck className="size-7" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-extrabold tracking-tight text-white">System Admin Portal</h1>
               <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-bold text-blue-400 border border-blue-500/30">
                 admin@gmail.com
@@ -318,7 +318,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={loadData}
@@ -390,16 +390,18 @@ export default function AdminPage() {
 
       {/* Main Admin Content Tabs */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="bg-slate-800 border border-slate-700/80 p-1 rounded-xl">
-          <TabsTrigger value="users" className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold data-[state=active]:bg-[#1E4FD8] data-[state=active]:text-white">
-            <Users className="size-3.5" />
-            User Accounts ({users.length})
-          </TabsTrigger>
-          <TabsTrigger value="weather" className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold data-[state=active]:bg-[#1E4FD8] data-[state=active]:text-white">
-            <CloudSun className="size-3.5" />
-            Global Weather Library ({globalWeather.length})
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="bg-slate-800 border border-slate-700/80 p-1 rounded-xl">
+            <TabsTrigger value="users" className="flex items-center gap-2 whitespace-nowrap px-4 py-1.5 text-xs font-bold data-[state=active]:bg-[#1E4FD8] data-[state=active]:text-white">
+              <Users className="size-3.5" />
+              User Accounts ({users.length})
+            </TabsTrigger>
+            <TabsTrigger value="weather" className="flex items-center gap-2 whitespace-nowrap px-4 py-1.5 text-xs font-bold data-[state=active]:bg-[#1E4FD8] data-[state=active]:text-white">
+              <CloudSun className="size-3.5" />
+              Global Weather Library ({globalWeather.length})
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* TAB 1: USER ACCOUNTS */}
         <TabsContent value="users" className="space-y-4">
@@ -425,7 +427,8 @@ export default function AdminPage() {
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/40">
-            <table className="w-full text-left text-xs text-slate-300">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[920px] text-left text-xs text-slate-300">
               <thead className="bg-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 <tr>
                   <th className="px-4 py-3">User Email / Account</th>
@@ -603,6 +606,7 @@ export default function AdminPage() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </TabsContent>
 
@@ -681,7 +685,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="flex-1">
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
                       Location Display Name in Picker:
@@ -693,11 +697,12 @@ export default function AdminPage() {
                       className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white font-bold outline-none focus:border-blue-500"
                     />
                   </div>
+                  <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={handlePublishWeather}
                     disabled={uploadingWeather}
-                    className="self-end rounded-lg bg-emerald-600 hover:bg-emerald-500 px-5 py-2 text-xs font-bold text-white shadow-md transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex-1 self-end rounded-lg bg-emerald-600 hover:bg-emerald-500 px-5 py-2 text-xs font-bold text-white shadow-md transition-colors cursor-pointer disabled:opacity-50 sm:flex-initial"
                   >
                     {uploadingWeather ? "Publishing..." : "Publish to Global Database"}
                   </button>
@@ -708,6 +713,7 @@ export default function AdminPage() {
                   >
                     Cancel
                   </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -721,7 +727,8 @@ export default function AdminPage() {
             </h3>
 
             <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/40">
-              <table className="w-full text-left text-xs text-slate-300">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-xs text-slate-300">
                 <thead className="bg-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <tr>
                     <th className="px-4 py-3">Location Name</th>
@@ -759,6 +766,7 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </TabsContent>

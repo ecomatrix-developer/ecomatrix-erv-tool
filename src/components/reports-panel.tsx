@@ -366,7 +366,7 @@ export function ReportsPanel({
               </Select>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
               <Button
                 onClick={() => handleOpenPreview(selectedId)}
                 size="lg"

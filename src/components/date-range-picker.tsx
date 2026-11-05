@@ -154,17 +154,17 @@ export function DateRangePicker({ value, onChange, className }: DateRangePickerP
           isOpen && "border-[#1E4FD8] ring-2 ring-[#1E4FD8]/20"
         )}
       >
-        <Calendar className="h-4 w-4 text-[#1E4FD8]" />
-        <span>{getDisplayLabel()}</span>
-        <span className="text-[0.65rem] font-semibold text-slate-400">
+        <Calendar className="h-4 w-4 shrink-0 text-[#1E4FD8]" />
+        <span className="whitespace-nowrap">{getDisplayLabel()}</span>
+        <span className="hidden whitespace-nowrap text-[0.65rem] font-semibold text-slate-400 sm:inline">
           ({formatDateLabel(value.startDate)} - {formatDateLabel(value.endDate)})
         </span>
-        <ChevronDown className={cn("h-3.5 w-3.5 text-slate-400 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {/* Popover Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl animate-in fade-in slide-in-from-top-2">
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
             <span className="text-xs font-extrabold text-slate-900">Select Date Range</span>
             <button

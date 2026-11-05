@@ -325,25 +325,26 @@ export function HistoryPanel({ initialProjects }: { initialProjects: ProjectSumm
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-[#1E4FD8] text-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#1E4FD8] text-white">
                   <FolderKanban className="size-5" />
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">{selectedProject.name}</h2>
+                <div className="min-w-0">
+                  <h2 className="truncate text-lg font-bold text-slate-900">{selectedProject.name}</h2>
                   <p className="text-xs text-slate-500">
                     Last updated {new Date(selectedProject.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-3">
                 <Link
                   href={`/simulator?projectId=${selectedProject.id}`}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-[#1E4FD8] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
                 >
-                  <Zap className="size-4 fill-amber-300 text-amber-300" /> Open in Simulator
+                  <Zap className="size-4 fill-amber-300 text-amber-300" />
+                  <span className="hidden sm:inline">Open in Simulator</span>
                 </Link>
 
                 <button
@@ -357,7 +358,7 @@ export function HistoryPanel({ initialProjects }: { initialProjects: ProjectSumm
             </div>
 
             {/* Modal Body with Tabs */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                   <Loader2 className="size-8 animate-spin text-[#1E4FD8] mb-2" />

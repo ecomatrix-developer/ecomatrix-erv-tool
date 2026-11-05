@@ -37,11 +37,13 @@ export function ProjectNameModal({ open, onCreated }: ProjectNameModalProps) {
   return (
     <DialogPrimitive.Root open={open} modal={false}>
       <DialogPrimitive.Portal>
-        {/* Non-modal backdrop: Left inset left-[68px] keeps the navigation sidebar completely free.
+        {/* Non-modal backdrop: on lg+ (where the hover sidebar is a persistent 68px rail)
+         * the left inset keeps it completely free. Below lg the sidebar is a closed
+         * drawer, not a persistent rail, so the backdrop covers the full screen there.
          * The overlay does not trap focus or block clicks outside. */}
-        <div className="fixed inset-y-0 right-0 left-[68px] z-30 bg-slate-900/30 backdrop-blur-[2px] transition-all animate-in fade-in-0" />
+        <div className="fixed inset-0 z-30 bg-slate-900/30 backdrop-blur-[2px] transition-all animate-in fade-in-0 lg:inset-y-0 lg:right-0 lg:left-[68px]" />
         <DialogPrimitive.Content
-          className="fixed top-1/2 left-[calc(50%+34px)] z-40 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl animate-in fade-in-0 zoom-in-95"
+          className="fixed top-1/2 left-1/2 z-40 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 lg:left-[calc(50%+34px)]"
         >
           <DialogPrimitive.Title className="text-lg font-bold text-slate-900">
             Name your project

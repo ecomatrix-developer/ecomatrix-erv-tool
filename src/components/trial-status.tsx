@@ -96,11 +96,12 @@ export function TrialStatus() {
 
   return (
     <>
-      {/* Persistent trial-days badge, top-right corner of every app page */}
+      {/* Persistent trial-days badge, top-right corner of every app page. Pushed
+       * down on small screens so it clears the sticky mobile nav bar (h-14). */}
       {daysLeft !== null && (
         <div
           className={cn(
-            "fixed top-4 right-4 z-40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm backdrop-blur-md",
+            "fixed top-[4.5rem] right-3 z-40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm backdrop-blur-md sm:right-4 lg:top-4",
             isPaused
               ? "border-amber-200 bg-amber-50/95 text-amber-600"
               : daysLeft <= 3
@@ -119,7 +120,7 @@ export function TrialStatus() {
 
       {/* Small "welcome back" reminder toast for returning logins */}
       {reminderOpen && daysLeft !== null && (
-        <div className="fixed top-16 right-4 z-40 w-72 max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-top-2 rounded-2xl border border-slate-200 bg-white p-4 pr-8 shadow-xl">
+        <div className="fixed top-[7.5rem] right-3 z-40 w-72 max-w-[calc(100vw-1.5rem)] animate-in fade-in slide-in-from-top-2 rounded-2xl border border-slate-200 bg-white p-4 pr-8 shadow-xl sm:right-4 lg:top-16">
           <button
             onClick={() => setReminderOpen(false)}
             className="absolute right-3 top-3 text-slate-400 transition-colors hover:text-slate-700"

@@ -241,7 +241,7 @@ export function ErvSimulator({
     isEditingRow ? (CARDS_WITH_TABLE_FIELDS.has(area) ? "active" : "dim") : (cardsLocked ? "dim" : undefined);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-100">
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-slate-100 lg:h-dvh">
       <ProjectNameModal
         open={showNameModal && !projectId}
         onCreated={(id, name) => {
@@ -255,7 +255,7 @@ export function ErvSimulator({
       <div className="flex flex-1 overflow-auto p-2">
         <div className="flex w-full flex-col gap-2">
           {/* Row 1: Location + the 6 system cards, all stretched to match Location's height */}
-          <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-3 lg:grid-cols-7">
+          <div className="grid grid-cols-1 items-stretch gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
             <DashboardCard title="Location" highlight={cardHighlight("location")}>
               <LocationPicker
                 region={activeForm.region}
@@ -399,9 +399,9 @@ export function ErvSimulator({
           </div>
 
           {/* Row 2: GHG & Fuel Cost (left) + schematic + Air Flow & Project 2-column (right) */}
-          <div className="flex gap-2 items-start">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-start">
             {/* Left: GHG + Fuel Cost */}
-            <div className="flex w-[260px] shrink-0 flex-col gap-2">
+            <div className="flex w-full shrink-0 flex-col gap-2 lg:w-[260px]">
               <div className="grid grid-cols-2 gap-1.5">
                 <DashboardCard title="GHG (kg CO2/kWh)" highlight={cardHighlight("ghg")}>
                   <Field label="Electricity">
@@ -424,7 +424,7 @@ export function ErvSimulator({
             </div>
 
             {/* Center & Right area: ERV Diagram + Air Flow & Project 2-column group */}
-            <div className="flex min-w-0 flex-1 gap-2 items-center">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
               {/* ERV Diagram */}
               <div className="flex flex-1 flex-col items-center">
                 <div className="w-full flex justify-center">
@@ -440,7 +440,7 @@ export function ErvSimulator({
               </div>
 
               {/* Right 2 columns: Air Flow Parameters + Project */}
-              <div className="grid grid-cols-2 gap-2 w-[340px] shrink-0 self-start">
+              <div className="grid grid-cols-2 gap-2 w-full sm:w-[340px] shrink-0 self-start">
                 <DashboardCard title="Air Flow Parameters" highlight={cardHighlight("airflow")}>
                   <Field label="Supply (L/s / CFM)">
                     <NumberInput value={activeForm.supplyFlow} onChange={(v) => activeSet("supplyFlow", v)} unitType="flow" disabled={cardsDisabled} />
@@ -500,7 +500,7 @@ export function ErvSimulator({
 
           {/* Initial Create Option Action Bar (shown when Results Table is not visible yet) */}
           {!showInputs && !done && (
-            <div className="relative flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="relative flex flex-col items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               {loading && (
                 <BrandLoader
                   overlay
@@ -509,7 +509,7 @@ export function ErvSimulator({
                   subtext="Calculating 8,760 annual hours..."
                 />
               )}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold text-slate-700">
                   Ready to simulate?
                 </span>
@@ -517,7 +517,7 @@ export function ErvSimulator({
                   Configure the parameters above and click to create {currentLabel}.
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={runScenario}
@@ -546,8 +546,8 @@ export function ErvSimulator({
                 />
               )}
               <Tabs defaultValue="inputs" onValueChange={(val) => { if (val === "analysis") setAnalysisClicked(true); }}>
-                <div className="flex items-center justify-between gap-3 mb-1.5 px-1">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-1.5 px-1">
+                  <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-sm font-extrabold text-slate-900">Results</h2>
                     <TabsList className="h-7 p-0.5 bg-slate-100">
                       <TabsTrigger value="inputs" className="h-6 text-xs px-2.5">Inputs &amp; Energy</TabsTrigger>
@@ -576,7 +576,7 @@ export function ErvSimulator({
                   )}
 
                   {/* Actions inside Results Header at top right */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {isEditingRow ? (
                       <>
                         <button

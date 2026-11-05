@@ -105,22 +105,23 @@ export function ReportPreviewModal({
         className="relative flex h-full max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-800 bg-white shadow-2xl cursor-default"
       >
         {/* Modal Controls Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-6 py-4 text-white">
-          <div className="flex items-center gap-3">
-            <FileText className="size-6 text-[#1E4FD8]" />
-            <div>
-              <h2 className="text-base font-bold">Executive Engineering Report: {projectName}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-4 text-white sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <FileText className="size-6 shrink-0 text-[#1E4FD8]" />
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-bold">Executive Engineering Report: {projectName}</h2>
               <p className="text-xs text-slate-300">Energy Recovery Ventilation Multi-Scenario Report</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {projectId && (
               <Link
                 href={`/simulator?projectId=${projectId}`}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
               >
-                <Zap className="size-4 fill-amber-300 text-amber-300" /> Open in Simulator
+                <Zap className="size-4 fill-amber-300 text-amber-300" />
+                <span className="hidden sm:inline">Open in Simulator</span>
               </Link>
             )}
 
@@ -136,7 +137,7 @@ export function ReportPreviewModal({
               ) : (
                 <Download className="size-4" />
               )}
-              Download PDF
+              <span className="hidden sm:inline">Download PDF</span>
             </Button>
 
             <button
@@ -154,7 +155,7 @@ export function ReportPreviewModal({
         </div>
 
         {/* Modal Body - Printable Report Document */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-10 bg-slate-100">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 bg-slate-100">
           {!calcResult || !payloads || payloads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-28 text-slate-400">
               <Loader2 className="size-8 animate-spin text-[#1E4FD8] mb-3" />
@@ -163,7 +164,7 @@ export function ReportPreviewModal({
           ) : (
             <div
               id="printable-report-content"
-              className="mx-auto max-w-4xl space-y-8 rounded-3xl bg-white p-8 sm:p-10 shadow-lg border border-slate-200"
+              className="mx-auto max-w-4xl space-y-8 rounded-3xl bg-white p-4 sm:p-8 lg:p-10 shadow-lg border border-slate-200"
             >
               {/* 1. REPORT BRANDING & HEADER CARD */}
               <div className="flex flex-col justify-between border-b border-slate-200 pb-6 gap-4 sm:flex-row sm:items-center">
@@ -185,7 +186,7 @@ export function ReportPreviewModal({
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 min-w-[240px] text-left text-xs text-slate-700 space-y-2 shadow-xs">
+                <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-xs text-slate-700 space-y-2 shadow-xs sm:w-auto sm:min-w-[240px]">
                   <div className="border-b border-slate-200/80 pb-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Project Name</span>
                     <p className="font-extrabold text-slate-900 text-sm">{projectName}</p>

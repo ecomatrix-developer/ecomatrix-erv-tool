@@ -4,9 +4,9 @@ import { TrialStatus } from "@/components/trial-status";
 
 export default function AppGroupLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 lg:flex-row">
       <AppSidebar />
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-hidden">{children}</main>
       <FloatingCalculator />
       <TrialStatus />
     </div>

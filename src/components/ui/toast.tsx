@@ -32,8 +32,8 @@ export function Toast({ state, onClose, durationMs = 4000 }: ToastProps) {
   const Icon = ICONS[variant];
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-[300] -translate-x-1/2 animate-in fade-in slide-in-from-bottom-2 duration-200">
-      <div className="flex items-center gap-2.5 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-2xl max-w-sm">
+    <div className="fixed bottom-6 left-1/2 z-[300] w-[calc(100vw-2rem)] -translate-x-1/2 px-0 animate-in fade-in slide-in-from-bottom-2 duration-200 sm:w-auto">
+      <div className="flex items-center gap-2.5 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-2xl sm:max-w-sm">
         <Icon className={cn("size-4 shrink-0", ICON_COLORS[variant])} />
         <span className="flex-1">{state.message}</span>
         <button type="button" onClick={onClose} className="shrink-0 text-slate-400 hover:text-white transition-colors cursor-pointer">

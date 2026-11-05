@@ -90,8 +90,10 @@ export function AnalysisCharts({ analysis, scenarios, payloads = [] }: AnalysisC
                 Energy Use by End-Use, by Option
               </h4>
 
-              {/* Stacked Chart Area */}
-              <div className="relative flex h-[280px] w-full items-end justify-around pl-14 pr-4 pb-8 border-b border-slate-200">
+              {/* Stacked Chart Area -- horizontally scrollable on narrow screens since
+                  the bars/axis use fixed pixel widths that can't meaningfully reflow. */}
+              <div className="w-full overflow-x-auto">
+              <div className="relative flex h-[280px] min-w-[420px] items-end justify-around pl-14 pr-4 pb-8 border-b border-slate-200">
                 {/* Y-axis Grid Lines & Labels */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pr-2 pl-12">
                   {[...yTicks].reverse().map((tick) => (
@@ -163,6 +165,7 @@ export function AnalysisCharts({ analysis, scenarios, payloads = [] }: AnalysisC
                   );
                 })}
               </div>
+              </div>
             </div>
 
             {/* Legend at Bottom */}
@@ -227,12 +230,12 @@ export function AnalysisCharts({ analysis, scenarios, payloads = [] }: AnalysisC
                   }
 
                   return (
-                    <div key={row.scenario} className="flex items-center gap-3">
+                    <div key={row.scenario} className="flex items-center gap-2 sm:gap-3">
                       {/* Scenario & Tech Label (left column) */}
-                      <div className="w-28 shrink-0 text-right text-xs leading-snug">
+                      <div className="w-16 shrink-0 text-right text-xs leading-snug sm:w-28">
                         <span className="font-extrabold text-slate-900 block truncate">{row.scenario}</span>
                         {techDisplay && (
-                          <span className="text-[11px] font-medium text-slate-500 block truncate">
+                          <span className="hidden text-[11px] font-medium text-slate-500 truncate sm:block">
                             {techDisplay}
                           </span>
                         )}
@@ -256,7 +259,7 @@ export function AnalysisCharts({ analysis, scenarios, payloads = [] }: AnalysisC
 
             {/* X-axis Ticks & Label Footer */}
             <div className="pt-3 border-t border-slate-100">
-              <div className="flex justify-between pl-32 pr-12 text-[10px] font-bold text-slate-400 mb-1">
+              <div className="flex justify-between pl-20 pr-2 text-[10px] font-bold text-slate-400 mb-1 sm:pl-32 sm:pr-12">
                 {[0, 2, 4, 6, 8, 10, 12, 14, 16].map((tick) => (
                   <span key={tick}>{tick}</span>
                 ))}
