@@ -139,6 +139,24 @@ export async function resumeUserTrial(userId: string): Promise<{ success?: boole
   return { success: true };
 }
 
+/**
+ * Admin action: grant or revoke permanent exemption from the 14-day trial clock for a
+ * user (e.g. internal accounts, VIPs). An exempt account is never locked out by
+ * continueWithEmail/login (src/app/actions/auth.ts) regardless of trial_started_at.
+ */
+export async function setUserTrialExempt(userId: string, exempt: boolean): Promise<{ success?: boolean; error?: string }> {
+  const adminSession = await verifyAdminSession();
+  if (!adminSession) return { error: "Unauthorized access." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("users").update({ trial_exempt: exempt }).eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
 /** Admin action to create a new user account */
 export async function createAdminUserAccount(formData: {
   email: string;

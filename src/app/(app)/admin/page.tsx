@@ -32,6 +32,7 @@ import {
   restartUserTrial,
   pauseUserTrial,
   resumeUserTrial,
+  setUserTrialExempt,
   adminUploadGlobalWeather,
   listGlobalWeatherFiles,
   deleteGlobalWeatherFile,
@@ -210,6 +211,23 @@ export default function AdminPage() {
       setNotice({ type: "error", text: res.error });
     } else {
       setNotice({ type: "success", text: `Access resumed for ${user.email}. They can sign in again.` });
+      loadData();
+    }
+  }
+
+  async function handleToggleTrialExempt(user: UserRecord) {
+    setNotice(null);
+    const nextExempt = !user.trial_exempt;
+    const res = await setUserTrialExempt(user.id, nextExempt);
+    if (res.error) {
+      setNotice({ type: "error", text: res.error });
+    } else {
+      setNotice({
+        type: "success",
+        text: nextExempt
+          ? `${user.email} is now exempt from the 14-day trial and will never be locked out.`
+          : `Trial exemption removed for ${user.email}. The 14-day clock applies again.`,
+      });
       loadData();
     }
   }
@@ -510,6 +528,20 @@ export default function AdminPage() {
                                 >
                                   <RotateCcw className="size-3 text-blue-400" />
                                   Restart Trial
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleTrialExempt(u)}
+                                  title={
+                                    u.trial_exempt
+                                      ? "Remove trial exemption -- the 14-day clock will apply again"
+                                      : "Exempt this account from the 14-day trial permanently"
+                                  }
+                                  className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+                                >
+                                  <ShieldCheck className={cn("size-3", u.trial_exempt ? "text-slate-400" : "text-blue-400")} />
+                                  {u.trial_exempt ? "Remove Exemption" : "Exempt"}
                                 </button>
 
                                 {u.trial_paused_at ? (
