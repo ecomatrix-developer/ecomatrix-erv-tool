@@ -4,14 +4,13 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createSession, deleteSession, getSession, getAuthenticatedUserId } from "@/lib/session";
+import { validateEmailFormat } from "@/lib/email-validation";
 
 export interface AuthFormState {
   error?: string;
   success?: boolean;
   message?: string;
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Passwordless "Launch ERV Tool" gate: one email field, no password. Unknown
@@ -28,8 +27,17 @@ export async function continueWithEmail(_prevState: AuthFormState, formData: For
     .toLowerCase();
   const next = String(formData.get("next") ?? "/dashboard");
 
-  if (!email || !EMAIL_REGEX.test(email)) {
+  if (!email) {
     return { error: "Please enter a valid email address." };
+  }
+
+  const emailCheck = validateEmailFormat(email);
+  if (!emailCheck.valid) {
+    return {
+      error: emailCheck.suggestedDomain
+        ? `That looks like a typo. Did you mean "${email.split("@")[0]}@${emailCheck.suggestedDomain}"?`
+        : "Please enter a valid email address.",
+    };
   }
 
   if (email === "admin@gmail.com") {

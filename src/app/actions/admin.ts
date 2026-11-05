@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSession } from "@/lib/session";
+import { validateEmailFormat } from "@/lib/email-validation";
 
 export interface UserRecord {
   id: string;
@@ -171,6 +172,14 @@ export async function createAdminUserAccount(formData: {
   const fullName = formData.fullName?.trim() || "";
 
   if (!email || !password) return { error: "Email and password are required." };
+  const emailCheck = validateEmailFormat(email);
+  if (!emailCheck.valid) {
+    return {
+      error: emailCheck.suggestedDomain
+        ? `That looks like a typo. Did you mean "${email.split("@")[0]}@${emailCheck.suggestedDomain}"?`
+        : "Please enter a valid email address.",
+    };
+  }
   if (password.length < 6) return { error: "Password must be at least 6 characters long." };
 
   const supabase = createAdminClient();
